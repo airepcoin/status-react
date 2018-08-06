@@ -49,7 +49,7 @@
 
     hooks/status.chat.commands.test-command
     {:description   "Test command"
-     :scopes        [{:scope :personal-chats}]
+     :scope         #{:public-chats}
      :preview       @views/send.preview
      :short-preview @views/send.short-preview
      :parameters    [{:id          :asset
@@ -66,12 +66,12 @@
                                                          :symbol   :keyword
                                                          :view     :view
                                                          :contract :string}}
-                'hooks/status.chat.commands {:properties {:scopes        [{:scope #{:personal-chats}}]
+                'hooks/status.chat.commands {:properties {:scope         #{:personal-chats :public-chats}
                                                           :description   :string
                                                           :short-preview :view
                                                           :preview       :view
                                                           :parameters    [{:id           :keyword
-                                                                           :type         #{:text :phone :password :number}
+                                                                           :type         {:one-of #{:text :phone :password :number}}
                                                                            :placeholder  :string
                                                                            :suggestions? :view}]}}}})
 
@@ -89,10 +89,10 @@
 (defn collectibles []
   (registry/hooks registry 'hooks/status.collectibles))
 
-(defn command-hook->command [[id {:keys [description scopes parameters preview short-preview]}]]
+(defn command-hook->command [[id {:keys [description scope parameters preview short-preview]}]]
   (reify protocol/Command
     (id [_] (name id))
-    (scope [_] (set (map :scope scopes)))
+    (scope [_] scope)
     (description [_] description)
     (parameters [_] parameters)
     (validate [_ _ _])
