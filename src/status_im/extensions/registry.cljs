@@ -1,5 +1,6 @@
 (ns status-im.extensions.registry
-  (:require [clojure.string :as string]
+  (:require [re-frame.core :as re-frame]
+            [clojure.string :as string]
             [pluto.reader :as reader]
             [pluto.registry :as registry]
             [pluto.storage :as storage]
@@ -126,6 +127,9 @@
   (let [[type id] (extension/url->storage-details url)
         storage (get storages type)]
     (storage/fetch storage
-                   {:value id} #(load id (read-extension %)))))
+                   {:value id} (fn [data]
+                                 (load id (read-extension data))
+                                 (when-let [commands (seq (chat-commands))]
+                                   (re-frame/dispatch [:load-commands commands]))))))
 
 (load "status" extensions)
